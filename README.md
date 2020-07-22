@@ -14,5 +14,6 @@ I would love for someone to improve upon this plugin.
 There is only one outstanding feature currently:
 
 * [ ] Layers need to remain in the same position after the plugin is ran
+* [ ] Layers need to retain their styles when cutting and pasting
 
 

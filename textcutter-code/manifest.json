@@ -1,6 +1,10 @@
 {
-  "name": "Split text",
+  "name": "TextCutter",
   "id": "739131137116544548",
   "api": "1.0.0",
-  "main": "code.js"
+  "main": "code.js",
+  "menu": [
+    {"name": "Split text", "command": "split"},
+    {"name": "Join text", "command": "join"}
+  ]
 }

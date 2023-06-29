@@ -12,25 +12,22 @@
 */
 
 
-  // Helper functions
+// Helper functions
 
-    // Recursively checking if selected node is inside the instance — if it is we can't split layers, as we can't add new ones in instance 
-    var nodeInInstance = (item) => {
-      if (item.parent.type == "PAGE"){
-        return false
-        
-      } 
-      else{
-        if (item.parent.type == "INSTANCE"){      
-        return true}
-        else{
-          nodeInInstance(item.parent)
-        }
-      }
+// Recursively checking if selected node is inside the instance — if it is we can't split layers, as we can't add new ones in instance
+var nodeInInstance = (item) => {
+  if (item.parent.type == "PAGE"){
+    return false
+
+  }
+  else{
+    if (item.parent.type == "INSTANCE"){
+    return true}
+    else{
+      nodeInInstance(item.parent)
     }
-
-
-
+  }
+}
 
 
 async function main(): Promise<string | undefined> {
@@ -62,13 +59,13 @@ if (figma.command === 'split'){
 
     if (nodeInInstance(node)){
       return "Can’t split texts inside of the instance! Try splitting text in main component"
-    } 
+    }
 
     // We get the characters from our current selected layer, and parent to put individual lines in it later
     var inputText = node.characters;
     var nodeParent = node.parent
     var nodeFirstStyle = node.getRangeTextStyleId(0,1)
-    
+
     // Detecting the font from the first character, loading it, and applying it to the whole node. This way we can drop styling without loading all used fonts
 
     var nodeFirstFont = node.getRangeFontName(0,1)
@@ -129,7 +126,7 @@ if (figma.command === 'split'){
 
 
 if (figma.command === 'join'){
-  
+
   // JOIN COMMAND
 
 
@@ -153,7 +150,7 @@ if (figma.command === 'join'){
   if(textlist.find(node => node.hasMissingFont)){
     return 'Whoops, you need to have the font for all selected layers installed first.'
   }
-  
+
   // Finding the top-leftmost one from selected text layers. It will be our "main" node, we will merge joined text content into it later.
 
   textlist.sort((a, b) => {
@@ -177,8 +174,8 @@ if (figma.command === 'join'){
   var mainNode = textlist[0]
 
   // checking if there is text layers placed in instance among the text nodes.
- 
-  
+
+
   if(textlist.filter(node => nodeInInstance(node)).length > 0){
     return "Can’t join texts from the layers inside of the instance! Try joining texts in main component"
   }
@@ -197,7 +194,7 @@ if (figma.command === 'join'){
 // Dropping mixed styling and applying joined text to the main node
 
 var nodeFirstStyle = mainNode.getRangeTextStyleId(0,1)
-    
+
 // Detecting first character's font, loading it, and applying it to the whole node. This way we can drop styling without loading all used fonts
 
 var nodeFirstFont = mainNode.getRangeFontName(0,1)

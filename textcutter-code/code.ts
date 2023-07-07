@@ -32,33 +32,31 @@ var nodeInInstance = (item) => {
 
 async function main(): Promise<string | undefined> {
 
-
-
 if (figma.command === 'split'){
 
 // SPLIT COMMAND
 
     // First, some checks and balances common for both commands
-
+    const singleTextNodeError = "Select a single text node to split text."
     // Make sure the selection is a single piece of text before proceeding.
     if (figma.currentPage.selection.length !== 1) {
-      return "Select a single text node to split."
+      return singleTextNodeError
     }
 
     // Make sure we are dealing with a single text node
     const node = figma.currentPage.selection[0];
 
     if (node.type !== 'TEXT') {
-      return "Select a single text node to split."
+      return singleTextNodeError
     }
 
     // Font check
     if (node.hasMissingFont) {
-      return('Whoops, you need to have the font for this layer installed.');
+      return('Oops, you need to have the font for this layer installed.');
     }
 
     if (nodeInInstance(node)){
-      return "Can’t split texts inside of the instance! Try splitting text in main component"
+      return "Can’t split texts inside of a component instance. Try splitting text in main component."
     }
 
     // We get the characters from our current selected layer, and parent to put individual lines in it later
@@ -67,10 +65,8 @@ if (figma.command === 'split'){
     var nodeFirstStyle = node.getRangeTextStyleId(0,1)
 
     // Detecting the font from the first character, loading it, and applying it to the whole node. This way we can drop styling without loading all used fonts
-
     var nodeFirstFont = node.getRangeFontName(0,1)
     await figma.loadFontAsync(nodeFirstFont as FontName)
-
 
     // If there was style on the first character we applying it to whole text, if not, changing the font of whole text to one from the first character.
     if (nodeFirstStyle){
@@ -83,15 +79,18 @@ if (figma.command === 'split'){
     // This regex splits multiline string into multiple lines and puts it in an array
     var result = inputText.split(/\r?\n/);
 
-    // Lines get sanitized in 2 ways:
-    // * All empty strings get removed (Boolean filter)
-    // * We trim away the whitespace at the end of the string
+    /*
+      Lines get sanitized in 2 ways:
+
+      * All empty strings get removed (Boolean filter)
+      * We trim away the whitespace at the end of the string
+     */
 
     var filteredResults = result.filter(Boolean).map(s => s.trim());
 
     // Checking if there is just one line in array, in that case doing nothing so original stays in place
     if (filteredResults.length === 1){
-      return "Nothing to split! There is only one row in the text layer"
+      return "Nothing to split. There is only one line in the selected text layer. Please select multi-line text to split it."
     }
 
     // Now we need to make text layers that contain the text content of each of the array items
@@ -100,7 +99,7 @@ if (figma.command === 'split'){
     // Offset to position lines correctly
     let vshift = 0
 
-    // For each new line in array we duplicating original layer, populate it with line content, and place after the previous one
+    // For each new line in array we duplicate the original layer, populate it with line content, and place it after the previous one
     for (let i = 0; i < filteredResults.length; i++) {
 
       const line = node.clone()
@@ -119,22 +118,18 @@ if (figma.command === 'split'){
   figma.currentPage.selection = nodes;
 
   // After job is done showing confirmation with number of layers created, and closing plugin
-  return `Splitted into ${nodes.length} layers`
-  }
+  return `Splitted text into ${nodes.length} layers`
 
-
+}
 
 
 if (figma.command === 'join'){
 
   // JOIN COMMAND
 
-
-  //Filtering text layers from selection
+  // Filtering text layers from selection
   var list = figma.currentPage.selection
   var textlist = list.filter(node => node.type == "TEXT") as TextNode[]
-
-
 
 
   // Checking if there is enough layers to join
@@ -173,13 +168,11 @@ if (figma.command === 'join'){
 
   var mainNode = textlist[0]
 
-  // checking if there is text layers placed in instance among the text nodes.
-
+  // Checking if there is text layers placed in instance among the text nodes.
 
   if(textlist.filter(node => nodeInInstance(node)).length > 0){
     return "Can’t join texts from the layers inside of the instance! Try joining texts in main component"
   }
-
 
   // Collecting joined text from all text nodes into variable and removing all other text nodes apart from main one
 
@@ -189,30 +182,30 @@ if (figma.command === 'join'){
       joinedText = joinedText==''? textlist[i].characters : joinedText + " " + textlist[i].characters
     }
     if (i > 0) {textlist[i].remove()}
-}
+  }
 
-// Dropping mixed styling and applying joined text to the main node
+  // Dropping mixed styling and applying joined text to the main node
 
-var nodeFirstStyle = mainNode.getRangeTextStyleId(0,1)
+  var nodeFirstStyle = mainNode.getRangeTextStyleId(0,1)
 
-// Detecting first character's font, loading it, and applying it to the whole node. This way we can drop styling without loading all used fonts
+  // Detecting first character's font, loading it, and applying it to the whole node. This way we can drop styling without loading all used fonts
 
-var nodeFirstFont = mainNode.getRangeFontName(0,1)
-await figma.loadFontAsync(nodeFirstFont as FontName)
+  var nodeFirstFont = mainNode.getRangeFontName(0,1)
+  await figma.loadFontAsync(nodeFirstFont as FontName)
 
-// If there was style on the first character we applying it to the whole text, if not, changing the font of the whole text to one from the first character.
-if (nodeFirstStyle){
-  mainNode.textStyleId = nodeFirstStyle
-}
-else{
-  mainNode.fontName = nodeFirstFont;
-}
-mainNode.textAutoResize = "HEIGHT"
-mainNode.characters = joinedText
+  // If there was style on the first character we applying it to the whole text, if not, changing the font of the whole text to one from the first character.
+  if (nodeFirstStyle) {
+    mainNode.textStyleId = nodeFirstStyle
+  }
+  else {
+    mainNode.fontName = nodeFirstFont;
+  }
+  mainNode.textAutoResize = "HEIGHT"
+  mainNode.characters = joinedText
 
-// After the job is done showing confirmation with number of layers joined, then closing plugin
-return `Joined ${textlist.length} layers`
-}
+  // After the job is done showing confirmation with number of layers joined, then closing plugin
+  return `Joined ${textlist.length} layers`
+  }
 }
 
 

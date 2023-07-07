@@ -7,5 +7,8 @@
   "menu": [
     {"name": "Split text", "command": "split"},
     {"name": "Join text", "command": "join"}
-  ]
+  ],
+  "networkAccess": {
+    "allowedDomains": ["none"]
+  }
 }

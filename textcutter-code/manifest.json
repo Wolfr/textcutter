@@ -4,6 +4,7 @@
   "api": "1.0.0",
   "main": "code.js",
   "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
   "menu": [
     {"name": "Split text", "command": "split"},
     {"name": "Join text", "command": "join"}

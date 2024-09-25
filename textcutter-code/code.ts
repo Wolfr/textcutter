@@ -11,7 +11,6 @@
   This plugin avoids the manual splitting of layers.
 */
 
-
 // Helper functions
 
 // Recursively checking if selected node is inside the instance — if it is we can't split layers, as we can't add new ones in instance
@@ -138,7 +137,7 @@ async function main(): Promise<string | undefined> {
       line.characters = filteredResults[i];
 
       // Apply formatting ranges to the new line
-      applyFormattingRanges(line, formattingInfo[i]);
+      await applyFormattingRanges(line, formattingInfo[i]);
 
       line.textAutoResize = "HEIGHT";
       vshift = vshift + line.height;
@@ -276,7 +275,7 @@ async function main(): Promise<string | undefined> {
 
     console.log("Applying formatting");
     // Apply formatting
-    applyFormattingRanges(mainNode, formattingRanges);
+    await applyFormattingRanges(mainNode, formattingRanges);
 
     console.log("Join operation completed");
 
@@ -311,8 +310,8 @@ function getFormattingRanges(textNode: TextNode, startOffset: number, endOffset:
 }
 
 // Helper function to apply formatting ranges to a text node
-function applyFormattingRanges(textNode: TextNode, ranges: any[]) {
-  ranges.forEach(range => {
+async function applyFormattingRanges(textNode: TextNode, ranges: any[]) {
+  for (const range of ranges) {
     textNode.setRangeFontSize(range.start, range.end, range.fontSize);
     textNode.setRangeFontName(range.start, range.end, range.fontName);
     textNode.setRangeTextCase(range.start, range.end, range.textCase);
@@ -320,9 +319,9 @@ function applyFormattingRanges(textNode: TextNode, ranges: any[]) {
     textNode.setRangeLetterSpacing(range.start, range.end, range.letterSpacing);
     textNode.setRangeLineHeight(range.start, range.end, range.lineHeight);
     textNode.setRangeFills(range.start, range.end, range.fills);
-    textNode.setRangeTextStyleId(range.start, range.end, range.textStyleId);
-    textNode.setRangeFillStyleId(range.start, range.end, range.fillStyleId);
-  });
+    textNode.setRangeTextStyleIdAsync(range.start, range.end, range.textStyleId);
+    textNode.setRangeFillStyleIdAsync(range.start, range.end, range.fillStyleId);
+  }
 }
 
 main().then((message: string | undefined) => {

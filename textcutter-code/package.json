@@ -1,12 +1,12 @@
 {
   "name": "textcutter",
-  "version": "1.1.4",
+  "version": "1.1.1",
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch"
   },
   "devDependencies": {
-    "@figma/plugin-typings": "^1.68.0",
+    "@figma/plugin-typings": "^1.100.2",
     "typescript": "^5.1.6"
   }
 }

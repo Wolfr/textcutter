@@ -1,6 +1,10 @@
+## 1.1.1
+
+* Fix some build shenanigans related to Typescript and dynamic pages
+
 ## 1.1
 
-* Allow plugin to retain formatting of individual lines when splitting or joining text
+* Plugin now retains formatting of individual characters per line when splitting or joining text
 
 ## 1.0
 

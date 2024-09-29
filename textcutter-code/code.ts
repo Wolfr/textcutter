@@ -104,10 +104,10 @@ async function main(): Promise<string | undefined> {
       const line = filteredResults[i];
       const startIndex = inputText.indexOf(line);
       const endIndex = startIndex + line.length;
-      
+
       const lineFormatting = getFormattingRanges(node, startIndex, endIndex);
       formattingInfo.push(lineFormatting);
-      
+
       // Collect unique fonts
       lineFormatting.forEach(range => {
         if (typeof range.fontName !== 'symbol') {
@@ -125,7 +125,7 @@ async function main(): Promise<string | undefined> {
     // Offset to position lines correctly
     let vshift = 0
 
-// 
+//
     // For each new line in array we create a new text node, populate it with line content, and place it after the previous one
     for (let i = 0; i < filteredResults.length; i++) {
       const line = figma.createText();
@@ -231,11 +231,7 @@ async function main(): Promise<string | undefined> {
       const node = textlist[i];
       const nodeText = node.characters;
 
-      // Add a line break between joined text, except for the first node
-      if (i > 0) {
-        joinedText += '\n';
-        currentOffset += 1; // Account for the added newline
-      }
+
 
     // Copy text from current node
     joinedText += nodeText;
@@ -270,8 +266,7 @@ async function main(): Promise<string | undefined> {
     // Apply joined text to the main node
     mainNode.characters = joinedText;
     mainNode.textAutoResize = "HEIGHT";
-    mainNode.textAutoResize = "WIDTH_AND_HEIGHT";
-
+    //mainNode.textAutoResize = "WIDTH_AND_HEIGHT";
 
     console.log("Applying formatting");
     // Apply formatting

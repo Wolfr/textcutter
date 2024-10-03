@@ -74,11 +74,10 @@ async function main(): Promise<string | undefined> {
 
     for (const node of selectedNodes) {
       const text = node.characters;
-      const bulletRegex = /[•·∙‣⁃◦⦿⦾■□▪▫●○◉◎◈◇◆★☆✦✧✱✲✳✴✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋]/g;
-        
+      const bulletRegex = /[•·∙‣⁃◦⦿⦾■□▪▫●○◉◎◈◇◆★☆✦✧✱✲✳✴✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋]\s?/g;
       if (bulletRegex.test(text)) {
-        const newText = text.replace(/[•·∙‣⁃◦⦿⦾■□▪▫●○◉◎◈◇◆★☆✦✧✱✲✳✴✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋]/g, '');
-        
+        const newText = text.replace(bulletRegex, '');
+
         // Get formatting of the original text
         const formatting = getFormattingRanges(node, 0, text.length);
         
@@ -383,7 +382,11 @@ async function main(): Promise<string | undefined> {
       const node = textlist[i];
       const nodeText = node.characters;
 
-
+    // Add a space before the text if it's not the first node
+    if (i > 0) {
+      joinedText += ' ';
+      currentOffset += 1;
+    }
 
     // Copy text from current node
     joinedText += nodeText;

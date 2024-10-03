@@ -35,8 +35,9 @@ async function loadFonts(node: TextNode, uniqueFonts: Set<string>): Promise<void
   if (typeof node.fontName !== 'symbol') {
     await figma.loadFontAsync(node.fontName);
   } else {
-    console.warn('Unable to load main font: fontName is a symbol');
-    await figma.loadFontAsync({ family: "Inter", style: "Regular" });
+    console.log('Mixed fonts detected. Loading all fonts used in the text node.');
+    const nodeFonts = await getUniqueFonts(node);
+    await Promise.all(nodeFonts.map(font => figma.loadFontAsync(font)));
   }
 }
 
@@ -73,10 +74,10 @@ async function main(): Promise<string | undefined> {
 
     for (const node of selectedNodes) {
       const text = node.characters;
-      const bulletRegex = /^[•·∙‣⁃◦⦿⦾■□▪▫●○◉◎◈◇◆★☆✦✧✱✲✳✴✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋]/;
-
+      const bulletRegex = /[•·∙‣⁃◦⦿⦾■□▪▫●○◉◎◈◇◆★☆✦✧✱✲✳✴✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋]/g;
+        
       if (bulletRegex.test(text)) {
-        const newText = text.replace(/^[•·∙‣⁃◦⦿⦾■□▪▫●○◉◎◈◇◆★☆✦✧✱✲✳✴✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋]\s*/, '');
+        const newText = text.replace(/[•·∙‣⁃◦⦿⦾■□▪▫●○◉◎◈◇◆★☆✦✧✱✲✳✴✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋]/g, '');
         
         // Get formatting of the original text
         const formatting = getFormattingRanges(node, 0, text.length);

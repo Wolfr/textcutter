@@ -36,4 +36,4 @@ Install it via the Figma Community plugin page [here](https://www.figma.com/comm
 
 ## A tip
 
-It is handy to assign both commands to hotkeys and use it along with OCR software that helps extract texts from images, such as [TextSniper](https://textsniper.app/).
+You can use this plugib along with OCR software that helps extract texts from images based on a screenshot, such as [TextSniper](https://textsniper.app/) or [CleanShot](https://cleanshot.com/).

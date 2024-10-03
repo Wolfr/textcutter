@@ -1,3 +1,8 @@
+## 3.2.0
+
+* Added new "Split words" feature to split a text layer into individual word layers
+* Added new "Remove bullets" feature to remove bullets from text
+
 ## 3.1.2
 
 * Fix issue with joined text, where the joined text would not end up on one line

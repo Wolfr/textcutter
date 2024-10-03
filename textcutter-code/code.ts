@@ -50,6 +50,157 @@ async function getUniqueFonts(node: TextNode): Promise<FontName[]> {
 }
 
 async function main(): Promise<string | undefined> {
+
+  if (figma.command === 'removeBullets') {
+    // REMOVE BULLETS COMMAND
+    const selectedNodes = figma.currentPage.selection.filter(node => node.type === "TEXT") as TextNode[];
+
+    if (selectedNodes.length === 0) {
+      return "No text layers selected. Please select at least one text layer.";
+    }
+
+    let bulletCount = 0;
+
+    // Load fonts for all selected nodes
+    const uniqueFonts = new Set<string>();
+    for (const node of selectedNodes) {
+      const nodeFonts = await getUniqueFonts(node);
+      for (const font of nodeFonts) {
+        uniqueFonts.add(JSON.stringify(font));
+      }
+    }
+    await loadFonts(selectedNodes[0], uniqueFonts);
+
+    for (const node of selectedNodes) {
+      const text = node.characters;
+      const bulletRegex = /^[•·∙‣⁃◦⦿⦾■□▪▫●○◉◎◈◇◆★☆✦✧✱✲✳✴✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋]/;
+
+      if (bulletRegex.test(text)) {
+        const newText = text.replace(/^[•·∙‣⁃◦⦿⦾■□▪▫●○◉◎◈◇◆★☆✦✧✱✲✳✴✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋]\s*/, '');
+        
+        // Get formatting of the original text
+        const formatting = getFormattingRanges(node, 0, text.length);
+        
+        // Update the node's text
+        node.characters = newText;
+        
+        // Apply formatting to the new text, adjusting for removed characters
+        const charsRemoved = text.length - newText.length;
+        const adjustedFormatting = formatting.map(function(range) {
+          return {
+            start: Math.max(0, range.start - charsRemoved),
+            end: Math.max(0, range.end - charsRemoved),
+            fontSize: range.fontSize,
+            fontName: range.fontName,
+            textCase: range.textCase,
+            textDecoration: range.textDecoration,
+            letterSpacing: range.letterSpacing,
+            lineHeight: range.lineHeight,
+            fills: range.fills,
+            textStyleId: range.textStyleId,
+            fillStyleId: range.fillStyleId
+          };
+        }).filter(range => range.end > range.start); // Filter out empty ranges
+        
+        await applyFormattingRanges(node, adjustedFormatting);
+        
+        bulletCount++;
+      }
+    }
+
+    return `Removed bullets from ${bulletCount} out of ${selectedNodes.length} selected text layers.`;
+  }
+
+  if (figma.command === 'splitWords') {
+    // SPLIT WORDS COMMAND
+
+    // Checks and balances
+    const singleTextNodeError = "Select a single text node to split words."
+    if (figma.currentPage.selection.length !== 1) {
+      return singleTextNodeError
+    }
+
+    const node = figma.currentPage.selection[0];
+    if (node.type !== 'TEXT') {
+      return singleTextNodeError
+    }
+
+    if (node.hasMissingFont) {
+      return 'Oops, you need to have the font for this layer installed.';
+    }
+
+    if (nodeInInstance(node)){
+      return "Can't split words inside of a component instance. Try splitting words in main component."
+    }
+
+    let inputText = node.characters;
+    let nodeParent = node.parent
+
+    // Split the text into words
+    let words = inputText.split(/\s+/).filter(Boolean);
+
+    if (words.length === 1){
+      return "Nothing to split. There is only one word in the selected text layer."
+    }
+
+    // Load fonts
+    const uniqueFonts = await getUniqueFonts(node);
+    await loadFonts(node, new Set(uniqueFonts.map(font => JSON.stringify(font))));
+
+    // Create new text nodes for each word
+    const nodes: SceneNode[] = [];
+    let xOffset = 0;
+
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      const startIndex = inputText.indexOf(word, i === 0 ? 0 : inputText.indexOf(words[i-1]) + words[i-1].length);
+      const endIndex = startIndex + word.length;
+
+      const wordNode = figma.createText();
+      wordNode.fontName = typeof node.fontName !== 'symbol' ? node.fontName : { family: "Inter", style: "Regular" };
+      wordNode.characters = word;
+
+      wordNode.x = node.x + xOffset;
+      wordNode.y = node.y;
+
+      // Apply formatting
+      const formattingRanges = getFormattingRanges(node, startIndex, endIndex);
+      await applyFormattingRanges(wordNode, formattingRanges);
+
+      wordNode.textAutoResize = "WIDTH_AND_HEIGHT";
+      
+      // Calculate the width of the word node
+      const wordWidth = wordNode.width;
+ 
+      // Add the word width to the offset
+      xOffset += wordWidth;
+
+      if (i < words.length - 1) {
+        const fontSize = wordNode.fontSize;
+        if (fontSize !== figma.mixed) {
+          const spaceWidth = fontSize * 0.25; // Approximate space width
+          xOffset += spaceWidth;
+        } else {
+          // Handle mixed font sizes
+          const averageFontSize = 16; // You might want to calculate this based on your specific needs
+          const spaceWidth = averageFontSize * 0.25;
+          xOffset += spaceWidth;
+        }
+      }
+
+      nodeParent.appendChild(wordNode);
+      nodes.push(wordNode);
+    }
+
+    // Remove the original node
+    node.remove();
+
+    // Select newly created nodes
+    figma.currentPage.selection = nodes;
+
+    return `Split text into ${nodes.length} words`;
+  }
+
   if (figma.command === 'split') {
     // SPLIT COMMAND
 

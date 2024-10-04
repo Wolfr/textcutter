@@ -234,16 +234,24 @@ async function main(): Promise<string | undefined> {
     // This regex splits multiline string into multiple lines and puts it in an array
     let result = inputText.split(/\r?\n/);
 
+    // Remove only trailing empty lines, keep empty lines in between
+    while (result.length > 0 && result[result.length - 1].trim() === '') {
+      result.pop();
+    }
+    while (result.length > 0 && result[0].trim() === '') {
+      result.shift();
+    }
+
     /*
       Lines get sanitized in 2 ways:
       * All empty strings get removed (Boolean filter)
       * We trim away the whitespace at the end of the string
      */
 
-    let filteredResults = result.filter(Boolean).map(s => s.trim());
+    let filteredResults = result.map(s => s.trimEnd());
 
     // Checking if there is just one line in array, in that case doing nothing so original stays in place
-    if (filteredResults.length === 1){
+    if (filteredResults.length === 1) {
       return "Nothing to split. There is only one line in the selected text layer. Please select multi-line text to split it."
     }
 
@@ -276,7 +284,6 @@ async function main(): Promise<string | undefined> {
     // Offset to position lines correctly
     let vshift = 0
 
-//
     // For each new line in array we create a new text node, populate it with line content, and place it after the previous one
     for (let i = 0; i < filteredResults.length; i++) {
       const line = figma.createText();
@@ -285,13 +292,18 @@ async function main(): Promise<string | undefined> {
 
       line.x = node.x;
       line.y = node.y + vshift;
-      line.characters = filteredResults[i];
-
+    
       // Apply formatting ranges to the new line
       await applyFormattingRanges(line, formattingInfo[i]);
 
-      line.textAutoResize = "HEIGHT";
-      vshift = vshift + line.height;
+      line.textAutoResize = "WIDTH_AND_HEIGHT";
+      
+      // Adjust vshift based on line height and add extra space for empty lines
+      vshift += line.height;
+      if (filteredResults[i].trim() === '' && i < filteredResults.length - 1) {
+        vshift += line.height; // Add an extra line height for empty lines
+      }
+
       nodeParent.appendChild(line);
       nodes.push(line);
     }
@@ -418,7 +430,7 @@ async function main(): Promise<string | undefined> {
     console.log("Applying joined text to main node");
     // Apply joined text to the main node
     mainNode.characters = joinedText;
-    mainNode.textAutoResize = "HEIGHT";
+    mainNode.textAutoResize = "WIDTH_AND_HEIGHT";
 
     console.log("Applying formatting");
     // Apply formatting

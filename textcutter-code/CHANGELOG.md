@@ -1,3 +1,7 @@
+## 3.3.0
+
+* Have an extra command for “join with breaks”, because sometimes that is what you want
+
 ## 3.2.0
 
 * Added new "Split words" feature to split a text layer into individual word layers

@@ -306,7 +306,7 @@ async function main(): Promise<string | undefined> {
     return `Split text into ${nodes.length} layers`;
   }
 
-  if (figma.command === 'join'){
+  if (figma.command === 'join' || figma.command === 'joinWithBreaks') {
     console.log("Join command started");
 
     // JOIN COMMAND
@@ -382,14 +382,12 @@ async function main(): Promise<string | undefined> {
       const node = textlist[i];
       const nodeText = node.characters;
 
-    // Add a space before the text if it's not the first node
-    if (i > 0) {
-      joinedText += ' ';
-      currentOffset += 1;
-    }
-
     // Copy text from current node
-    joinedText += nodeText;
+    if (figma.command === 'joinWithBreaks') {
+      joinedText += nodeText + (i < textlist.length - 1 ? '\n' : '');
+    } else {
+      joinedText += nodeText + (i < textlist.length - 1 ? ' ' : '');
+    }
 
     // Get formatting ranges for this node
     const nodeRanges = getFormattingRanges(node, 0, nodeText.length);
@@ -410,7 +408,7 @@ async function main(): Promise<string | undefined> {
       });
     }
 
-    currentOffset += nodeText.length;
+    currentOffset += nodeText.length + (i < textlist.length - 1 ? 1 : 0); // Add 1 for space or newline
       // Remove the current node if it's not the main node
       if (i > 0) {
         node.remove();
@@ -421,7 +419,6 @@ async function main(): Promise<string | undefined> {
     // Apply joined text to the main node
     mainNode.characters = joinedText;
     mainNode.textAutoResize = "HEIGHT";
-    //mainNode.textAutoResize = "WIDTH_AND_HEIGHT";
 
     console.log("Applying formatting");
     // Apply formatting
@@ -430,7 +427,7 @@ async function main(): Promise<string | undefined> {
     console.log("Join operation completed");
 
     // After the job is done showing confirmation with number of layers joined, then closing plugin
-    return `Joined ${textlist.length} layers`;
+    return `Joined ${textlist.length} layers${figma.command === 'joinWithBreaks' ? ' with line breaks' : ''}`;
   }
 }
 

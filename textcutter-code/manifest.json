@@ -8,6 +8,7 @@
   "menu": [
     {"name": "Split text", "command": "split"},
     {"name": "Join text", "command": "join"},
+    {"name": "Join text (with breaks)", "command": "joinWithBreaks"},
     {"name": "Split words", "command": "splitWords"},
     {"name": "Remove Bullets", "command": "removeBullets"}
   ],

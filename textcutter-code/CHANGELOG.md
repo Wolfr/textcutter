@@ -1,3 +1,7 @@
+## 3.4.0
+
+* Improve remove bullets to remove Figma-created bullets. When you type the asterisk character, Figma will create a “list” of which you can also set up the list spacing. In previous versions, we only removed bullet-like characters (like •). Now we also remove Figma-created bullets.
+
 ## 3.3.0
 
 * Have an extra command for “join with breaks”, because sometimes that is what you want

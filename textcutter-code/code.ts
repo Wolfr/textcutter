@@ -52,6 +52,7 @@ async function getUniqueFonts(node: TextNode): Promise<FontName[]> {
 
 async function main(): Promise<string | undefined> {
 
+
   if (figma.command === 'removeBullets') {
     // REMOVE BULLETS COMMAND
     const selectedNodes = figma.currentPage.selection.filter(node => node.type === "TEXT") as TextNode[];
@@ -73,43 +74,105 @@ async function main(): Promise<string | undefined> {
     await loadFonts(selectedNodes[0], uniqueFonts);
 
     for (const node of selectedNodes) {
-      const text = node.characters;
-      const bulletRegex = /[•·∙‣⁃◦⦿⦾■□▪▫●○◉◎◈◇◆★☆✦✧✱✲✳✴✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋]\s?/g;
-      if (bulletRegex.test(text)) {
-        const newText = text.replace(bulletRegex, '');
+      let textChanged = false;
+      const lines = node.characters.split('\n');
+      let newLines = [];
+      let currentIndex = 0;
 
-        // Get formatting of the original text
-        const formatting = getFormattingRanges(node, 0, text.length);
-        
-        // Update the node's text
-        node.characters = newText;
-        
-        // Apply formatting to the new text, adjusting for removed characters
-        const charsRemoved = text.length - newText.length;
-        const adjustedFormatting = formatting.map(function(range) {
-          return {
-            start: Math.max(0, range.start - charsRemoved),
-            end: Math.max(0, range.end - charsRemoved),
-            fontSize: range.fontSize,
-            fontName: range.fontName,
-            textCase: range.textCase,
-            textDecoration: range.textDecoration,
-            letterSpacing: range.letterSpacing,
-            lineHeight: range.lineHeight,
-            fills: range.fills,
-            textStyleId: range.textStyleId,
-            fillStyleId: range.fillStyleId
-          };
-        }).filter(range => range.end > range.start); // Filter out empty ranges
-        
-        await applyFormattingRanges(node, adjustedFormatting);
-        
+      for (const line of lines) {
+        const lineLength = line.length;
+
+        if (lineLength === 0) {
+          newLines.push(line);
+          currentIndex += 1; // Only add 1 for the newline character
+          continue;
+        }
+
+        const listOptions = node.getRangeListOptions(currentIndex, currentIndex + lineLength);
+
+        // Check for Figma-created bullets
+        if (listOptions !== figma.mixed && listOptions && listOptions.type === "UNORDERED") {
+          node.setRangeListOptions(currentIndex, currentIndex + lineLength, { type: "NONE" });
+          textChanged = true;
+        }
+
+        // Check for character-based bullets
+        const bulletRegex = /^[•·∙‣⁃◦⦿⦾■□▪▫●○◉◎◈◇◆★☆✦✧✱✲✳✴✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋]\s?/;
+        if (bulletRegex.test(line)) {
+          newLines.push(line.replace(bulletRegex, '').trim());
+          textChanged = true;
+        } else {
+          newLines.push(line);
+        }
+
+        currentIndex += lineLength + 1; // +1 for the newline character
+      }
+
+      if (textChanged) {
+        node.characters = newLines.join('\n');
+        await reapplyFormatting(node);
         bulletCount++;
       }
     }
-
     return `Removed bullets from ${bulletCount} out of ${selectedNodes.length} selected text layers.`;
   }
+
+
+// Helper function to reapply formatting after bullet removal
+  async function reapplyFormatting(node: TextNode) {
+    const length = node.characters.length;
+
+    // Reapply font
+    const fontName = node.getRangeFontName(0, 1);
+    if (typeof fontName !== 'symbol') {
+      await figma.loadFontAsync(fontName);
+      node.setRangeFontName(0, length, fontName);
+    }
+
+    // Reapply font size
+    const fontSize = node.getRangeFontSize(0, 1);
+    if (typeof fontSize === 'number') {
+      node.setRangeFontSize(0, length, fontSize);
+    }
+
+    // Reapply other text properties
+    const textDecoration = node.getRangeTextDecoration(0, 1);
+    if (textDecoration !== figma.mixed) {
+      node.setRangeTextDecoration(0, length, textDecoration);
+    }
+
+    const textCase = node.getRangeTextCase(0, 1);
+    if (textCase !== figma.mixed) {
+      node.setRangeTextCase(0, length, textCase);
+    }
+
+    const letterSpacing = node.getRangeLetterSpacing(0, 1);
+    if (letterSpacing !== figma.mixed) {
+      node.setRangeLetterSpacing(0, length, letterSpacing);
+    }
+
+    const lineHeight = node.getRangeLineHeight(0, 1);
+    if (lineHeight !== figma.mixed) {
+      node.setRangeLineHeight(0, length, lineHeight);
+    }
+
+    const fills = node.getRangeFills(0, 1);
+    if (fills !== figma.mixed) {
+      node.setRangeFills(0, length, fills);
+    }
+
+    // Reapply text and fill styles if they exist
+    const textStyleId = node.getRangeTextStyleId(0, 1);
+    if (typeof textStyleId === 'string') {
+      await node.setRangeTextStyleIdAsync(0, length, textStyleId);
+    }
+
+    const fillStyleId = node.getRangeFillStyleId(0, 1);
+    if (typeof fillStyleId === 'string') {
+      await node.setRangeFillStyleIdAsync(0, length, fillStyleId);
+    }
+  }
+
 
   if (figma.command === 'splitWords') {
     // SPLIT WORDS COMMAND

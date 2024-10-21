@@ -36,4 +36,4 @@ Install it via the Figma Community plugin page [here](https://www.figma.com/comm
 
 ## A tip
 
-You can use this plugib along with OCR software that helps extract texts from images based on a screenshot, such as [TextSniper](https://textsniper.app/) or [CleanShot](https://cleanshot.com/).
+You can use this plugin along with OCR software that helps extract texts from images based on a screenshot, such as [TextSniper](https://textsniper.app/) or [CleanShot](https://cleanshot.com/).

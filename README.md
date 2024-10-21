@@ -2,7 +2,7 @@
 
 TextCutter is a lightweight plugin for Figma to split or join text layers.
 
-You can start to use it via the [Figma Community plugin page]((https://www.figma.com/community/plugin/739131137116544548/TextCutter)).
+You can start to use it via the [Figma Community plugin page](https://www.figma.com/community/plugin/739131137116544548/TextCutter).
 
 This plugin avoids the manual splitting of multiline text layers into single text layers and makes you work faster.
 

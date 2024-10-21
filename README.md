@@ -34,7 +34,9 @@ Next to the core the core command “Split text”, we've added three additional
 
 ## A tip
 
-You can use this plugin along with OCR software that helps extract texts from images based on a screenshot, such as [TextSniper](https://textsniper.app/) or [CleanShot](https://cleanshot.com/).
+You can use this plugin along with OCR software that helps extract text from images based on a screenshot, such as [TextSniper](https://textsniper.app/) or [CleanShot](https://cleanshot.com/).
+
+We'd also like to take the opportunity here to promote our OCR plugin for Figma: [Screenshot to Layout](https://screenshottolayout.com/).
 
 ## Promote TextCutter
 
